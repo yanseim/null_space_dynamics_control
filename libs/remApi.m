@@ -896,7 +896,7 @@ classdef remApi
             operationMode_ = int32(operationMode);
             paramValues = libpointer('singlePtr',single([0 0 0]));
 
-            [rtn paramValues] = calllib(obj.libName,'simxGetArrayParameter',clientID,paramIdentifier_,paramValues ,operationMode_);
+            [rtn paramValues] = calllib(obj.libName,'simxGetArrayParam',clientID,paramIdentifier_,paramValues ,operationMode_);
         end
 
         function [rtn paramValues ]= simxGetBooleanParameter(obj,clientID,paramIdentifier,operationMode)
@@ -904,7 +904,23 @@ classdef remApi
             operationMode_ = int32(operationMode);
             paramValues = libpointer('uint8Ptr',uint8(0));
 
-            [rtn paramValues] = calllib(obj.libName,'simxGetBooleanParameter',clientID,paramIdentifier_,paramValues ,operationMode_);
+            [rtn paramValues] = calllib(obj.libName,'simxGetBoolParam',clientID,paramIdentifier_,paramValues ,operationMode_);
+        end
+
+        function [rtn paramValues ]= simxGetArrayParam(obj,clientID,paramIdentifier,operationMode)
+            paramIdentifier_ = int32(paramIdentifier);
+            operationMode_ = int32(operationMode);
+            paramValues = libpointer('singlePtr',single([0 0 0]));
+
+            [rtn paramValues] = calllib(obj.libName,'simxGetArrayParam',clientID,paramIdentifier_,paramValues ,operationMode_);
+        end
+
+        function [rtn paramValues ]= simxGetBoolParam(obj,clientID,paramIdentifier,operationMode)
+            paramIdentifier_ = int32(paramIdentifier);
+            operationMode_ = int32(operationMode);
+            paramValues = libpointer('uint8Ptr',uint8(0));
+
+            [rtn paramValues] = calllib(obj.libName,'simxGetBoolParam',clientID,paramIdentifier_,paramValues ,operationMode_);
         end
 
         function [rtn handle] = simxGetCollisionHandle(obj,clientID,collisionObjectName,operationMode)
@@ -971,7 +987,15 @@ classdef remApi
             operationMode_ = int32(operationMode);
             paramValue = libpointer('singlePtr',single(0));
 
-            [rtn paramValue] = calllib(obj.libName,'simxGetFloatingParameter',clientID,paramIdentifier_,paramValue,operationMode_);
+            [rtn paramValue] = calllib(obj.libName,'simxGetFloatParam',clientID,paramIdentifier_,paramValue,operationMode_);
+        end
+
+        function [rtn paramValue]= simxGetFloatParam(obj,clientID,paramIdentifier,operationMode)
+            paramIdentifier_ = int32(paramIdentifier);
+            operationMode_ = int32(operationMode);
+            paramValue = libpointer('singlePtr',single(0));
+
+            [rtn paramValue] = calllib(obj.libName,'simxGetFloatParam',clientID,paramIdentifier_,paramValue,operationMode_);
         end
 
         function [rtn signalValue]= simxGetFloatSignal(obj,clientID,signalName,operationMode)
@@ -994,7 +1018,15 @@ classdef remApi
             operationMode_ = int32(operationMode);
             paramValue = libpointer('int32Ptr',int32(0));
 
-            [rtn paramValue] = calllib(obj.libName,'simxGetIntegerParameter',clientID,paramIdentifier_,paramValue,operationMode_);
+            [rtn paramValue] = calllib(obj.libName,'simxGetInt32Param',clientID,paramIdentifier_,paramValue,operationMode_);
+        end
+
+        function [rtn paramValue]= simxGetInt32Param (obj,clientID,paramIdentifier,operationMode)
+            paramIdentifier_ = int32(paramIdentifier);
+            operationMode_ = int32(operationMode);
+            paramValue = libpointer('int32Ptr',int32(0));
+
+            [rtn paramValue] = calllib(obj.libName,'simxGetInt32Param',clientID,paramIdentifier_,paramValue,operationMode_);
         end
 
         function [rtn signalValue]= simxGetIntegerSignal(obj,clientID,signalName,operationMode)
@@ -1074,7 +1106,16 @@ classdef remApi
             operationMode_ = int32(operationMode);
             paramValue = libpointer('singlePtr',single(0));
 
-            [rtn paramValue] = calllib(obj.libName,'simxGetObjectFloatParameter',clientID,objectHandle_,parameterID_,paramValue,operationMode_);
+            [rtn paramValue] = calllib(obj.libName,'simxGetObjectFloatParam',clientID,objectHandle_,parameterID_,paramValue,operationMode_);
+        end
+
+        function [rtn paramValue]= simxGetObjectFloatParam(obj,clientID,objectHandle,parameterID,operationMode)
+            objectHandle_ = int32(objectHandle);
+            parameterID_ = int32(parameterID);
+            operationMode_ = int32(operationMode);
+            paramValue = libpointer('singlePtr',single(0));
+
+            [rtn paramValue] = calllib(obj.libName,'simxGetObjectFloatParam',clientID,objectHandle_,parameterID_,paramValue,operationMode_);
         end
 
         function [rtn handle] = simxGetObjectHandle(obj,clientID,name,operationmode)
@@ -1091,7 +1132,16 @@ classdef remApi
             operationMode_ = int32(operationMode);
             paramValue = libpointer('int32Ptr',int32(0));
 
-            [rtn paramValue] = calllib(obj.libName,'simxGetObjectIntParameter',clientID,objectHandle_,parameterID_,paramValue,operationMode_);
+            [rtn paramValue] = calllib(obj.libName,'simxGetObjectInt32Param',clientID,objectHandle_,parameterID_,paramValue,operationMode_);
+        end
+
+        function [rtn paramValue]= simxGetObjectInt32Param(obj,clientID,objectHandle,parameterID,operationMode)
+            objectHandle_ = int32(objectHandle);
+            parameterID_ = int32(parameterID);
+            operationMode_ = int32(operationMode);
+            paramValue = libpointer('int32Ptr',int32(0));
+
+            [rtn paramValue] = calllib(obj.libName,'simxGetObjectInt32Param',clientID,objectHandle_,parameterID_,paramValue,operationMode_);
         end
 
         function [rtn eulerAngles] = simxGetObjectOrientation(obj,clientID,objectHandle,relativeToObjectHandle,operationMode)
@@ -1186,7 +1236,30 @@ classdef remApi
             operationMode_ = int32(operationMode);
             paramValue_ = libpointer('int8PtrPtr');
 
-            [rtn paramValue_] = calllib(obj.libName,'simxGetStringParameter',clientID,paramIdentifier_,paramValue_,operationMode_);
+            [rtn paramValue_] = calllib(obj.libName,'simxGetStringParam',clientID,paramIdentifier_,paramValue_,operationMode_);
+
+            if(rtn == 0)
+                s=1;
+                paramValue_.setdatatype('int8Ptr',1,s);
+                value = paramValue_.value(s);
+                while(value ~= 0)
+                    paramValue_.setdatatype('int8Ptr',1,s);
+                    value = paramValue_.value(s);
+                    s=s+1;
+                end
+                tmp = paramValue_.value(1:s-1);
+                paramValue = char(tmp);
+            else
+                paramValue = [];
+            end
+        end
+
+        function [rtn paramValue]= simxGetStringParam(obj,clientID,paramIdentifier,operationMode)
+            paramIdentifier_ = int32(paramIdentifier);
+            operationMode_ = int32(operationMode);
+            paramValue_ = libpointer('int8PtrPtr');
+
+            [rtn paramValue_] = calllib(obj.libName,'simxGetStringParam',clientID,paramIdentifier_,paramValue_,operationMode_);
 
             if(rtn == 0)
                 s=1;
@@ -1386,6 +1459,14 @@ classdef remApi
             [rtn force ] = calllib(obj.libName,'simxGetJointForce',clientID,jointHandle_,single(0),operationMode_);
         end
 
+        function [rtn force]= simxGetJointMaxForce(obj,clientID,jointHandle,operationMode)
+            jointHandle_ = int32(jointHandle);
+            operationMode_ = int32(operationMode);
+            force = libpointer('single',single(0));
+
+            [rtn force ] = calllib(obj.libName,'simxGetJointMaxForce',clientID,jointHandle_,single(0),operationMode_);
+        end
+
         function [rtn baseHandle]= simxLoadModel(obj,clientID,modelPathAndName,options,operationMode)
             modelPathAndName_ = libpointer('int8Ptr',[int8(modelPathAndName) 0]);
             options_ = uint8(options);
@@ -1446,6 +1527,24 @@ classdef remApi
             minimumDistance = libpointer('singlePtr',single(0));
 
             [rtn minimumDistance] = calllib(obj.libName,'simxReadDistance',clientID,distanceObjectHandle_,minimumDistance,operationMode_);
+        end
+
+        function [rtn collisionState]= simxCheckCollision(obj,clientID,entity1,entity2,operationMode)
+            entity1_ = int32(entity1);
+            entity2_ = int32(entity2);
+            operationMode_ = int32(operationMode);
+            collisionState = libpointer('uint8Ptr',uint8(0));
+
+            [rtn collisionState] = calllib(obj.libName,'simxCheckCollision',clientID,entity1_,entity2_,collisionState,operationMode_);
+        end
+
+        function [rtn minimumDistance]= simxCheckDistance(obj,clientID,entity1,entity2,operationMode)
+            entity1_ = int32(entity1);
+            entity2_ = int32(entity2);
+            operationMode_ = int32(operationMode);
+            minimumDistance = libpointer('singlePtr',single(0));
+
+            [rtn minimumDistance] = calllib(obj.libName,'simxCheckDistance',clientID,entity1_,entity2_,minimumDistance,operationMode_);
         end
 
         function [rtn state forceVector torqueVector]= simxReadForceSensor(obj,clientID,forceSensorHandle,operationMode)
@@ -1528,7 +1627,20 @@ classdef remApi
                 paramValues_ = libpointer('singlePtr',single(paramValues));
                 operationMode_ = int32(operationMode);
 
-                [rtn paramValues_ ] = calllib(obj.libName,'simxSetArrayParameter',clientID,paramIdentifier_,paramValues_,operationMode_);
+                [rtn paramValues_ ] = calllib(obj.libName,'simxSetArrayParam',clientID,paramIdentifier_,paramValues_,operationMode_);
+            end
+        end
+
+        function [rtn ]= simxSetArrayParam(obj,clientID,paramIdentifier,paramValues,operationMode)
+            paramIdentifier_ = int32(paramIdentifier);
+            num_ele = numel(paramValues);
+            if (num_ele < 3)
+                error('paramValues should have 3 values');
+            else
+                paramValues_ = libpointer('singlePtr',single(paramValues));
+                operationMode_ = int32(operationMode);
+
+                [rtn paramValues_ ] = calllib(obj.libName,'simxSetArrayParam',clientID,paramIdentifier_,paramValues_,operationMode_);
             end
         end
 
@@ -1537,7 +1649,15 @@ classdef remApi
             paramValue_ = uint8(paramValue);
             operationMode_ = int32(operationMode);
 
-            [rtn ] = calllib(obj.libName,'simxSetBooleanParameter',clientID,paramIdentifier_,paramValue_,operationMode_);
+            [rtn ] = calllib(obj.libName,'simxSetBoolParam',clientID,paramIdentifier_,paramValue_,operationMode_);
+        end
+
+        function [rtn ]= simxSetBoolParam(obj,clientID,paramIdentifier,paramValue,operationMode)
+            paramIdentifier_ = int32(paramIdentifier);
+            paramValue_ = uint8(paramValue);
+            operationMode_ = int32(operationMode);
+
+            [rtn ] = calllib(obj.libName,'simxSetBoolParam',clientID,paramIdentifier_,paramValue_,operationMode_);
         end
 
         function [rtn ]= simxSetIntegerParameter(obj,clientID,paramIdentifier,paramValue,operationMode)
@@ -1545,7 +1665,15 @@ classdef remApi
             paramValue_ = int32(paramValue);
             operationMode_ = int32(operationMode);
 
-            [rtn ] = calllib(obj.libName,'simxSetIntegerParameter',clientID,paramIdentifier_,paramValue_,operationMode_);
+            [rtn ] = calllib(obj.libName,'simxSetInt32Param',clientID,paramIdentifier_,paramValue_,operationMode_);
+        end
+
+        function [rtn ]= simxSetInt32Param(obj,clientID,paramIdentifier,paramValue,operationMode)
+            paramIdentifier_ = int32(paramIdentifier);
+            paramValue_ = int32(paramValue);
+            operationMode_ = int32(operationMode);
+
+            [rtn ] = calllib(obj.libName,'simxSetInt32Param',clientID,paramIdentifier_,paramValue_,operationMode_);
         end
 
         function [rtn ]= simxSetIntegerSignal(obj,clientID,signalName,signalValue,operationMode)
@@ -1570,7 +1698,16 @@ classdef remApi
             parameterValue_ = int32(parameterValue);
             operationMode_ = int32(operationMode);
 
-            [rtn ] = calllib(obj.libName,'simxSetObjectIntParameter',clientID,objectHandle_,parameterID_,parameterValue_,operationMode_);
+            [rtn ] = calllib(obj.libName,'simxSetObjectInt32Param',clientID,objectHandle_,parameterID_,parameterValue_,operationMode_);
+        end
+
+        function [rtn ]= simxSetObjectInt32Param(obj,clientID,objectHandle,parameterID,parameterValue,operationMode)
+            objectHandle_ = int32(objectHandle);
+            parameterID_ = int32(parameterID);
+            parameterValue_ = int32(parameterValue);
+            operationMode_ = int32(operationMode);
+
+            [rtn ] = calllib(obj.libName,'simxSetObjectInt32Param',clientID,objectHandle_,parameterID_,parameterValue_,operationMode_);
         end
 
         function [rtn ]= simxSetObjectOrientation(obj,clientID,objectHandle,relativeToObjectHandle,eulerAngles,operationMode)
@@ -1835,6 +1972,14 @@ classdef remApi
             [rtn ] = calllib(obj.libName,'mtlb_simxSetJointForce',clientID,objectHandle_,force_,operationMode_);
         end
 
+        function [rtn ]= simxSetJointMaxForce(obj,clientID,objectHandle,force,operationMode)
+            objectHandle_ = int32(objectHandle);
+            force_ = libpointer('singlePtr',single(force));
+            operationMode_ = int32(operationMode);
+
+            [rtn ] = calllib(obj.libName,'mtlb_simxSetJointMaxForce',clientID,objectHandle_,force_,operationMode_);
+        end
+
         function [rtn ]= simxSetFloatSignal(obj,clientID,signalName,signalValue,operationMode)
             signalName_ = libpointer('int8Ptr',[int8(signalName) 0]);
             signalValue_ = libpointer('singlePtr',single(signalValue));
@@ -1849,7 +1994,16 @@ classdef remApi
             parameterValue_ = libpointer('singlePtr',single(parameterValue));
             operationMode_ = int32(operationMode);
 
-            [rtn ] = calllib(obj.libName,'mtlb_simxSetObjectFloatParameter',clientID,objectHandle_,parameterID_,parameterValue_,operationMode_);
+            [rtn ] = calllib(obj.libName,'mtlb_simxSetObjectFloatParam',clientID,objectHandle_,parameterID_,parameterValue_,operationMode_);
+        end
+
+        function [rtn ]= simxSetObjectFloatParam(obj,clientID,objectHandle,parameterID,parameterValue,operationMode)
+            objectHandle_ = int32(objectHandle);
+            parameterID_ = int32(parameterID);
+            parameterValue_ = libpointer('singlePtr',single(parameterValue));
+            operationMode_ = int32(operationMode);
+
+            [rtn ] = calllib(obj.libName,'mtlb_simxSetObjectFloatParam',clientID,objectHandle_,parameterID_,parameterValue_,operationMode_);
         end
 
         function [rtn ]= simxSetFloatingParameter(obj,clientID,paramIdentifier,paramValue,operationMode)
@@ -1857,7 +2011,15 @@ classdef remApi
             paramValue_ = libpointer('singlePtr',single(paramValue));
             operationMode_ = int32(operationMode);
 
-            [rtn ] = calllib(obj.libName,'mtlb_simxSetFloatingParameter',clientID,paramIdentifier_,paramValue_,operationMode_);
+            [rtn ] = calllib(obj.libName,'mtlb_simxSetFloatParam',clientID,paramIdentifier_,paramValue_,operationMode_);
+        end
+
+        function [rtn ]= simxSetFloatParam(obj,clientID,paramIdentifier,paramValue,operationMode)
+            paramIdentifier_ = int32(paramIdentifier);
+            paramValue_ = libpointer('singlePtr',single(paramValue));
+            operationMode_ = int32(operationMode);
+
+            [rtn ] = calllib(obj.libName,'mtlb_simxSetFloatParam',clientID,paramIdentifier_,paramValue_,operationMode_);
         end
 
         function [rtn handle] = simxCreateDummy(obj,clientID,size,colors,operationmode)

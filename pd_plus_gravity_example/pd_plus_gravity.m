@@ -12,19 +12,19 @@ forceLimit = 5000;
 displayOn=false;
 jointNum = 7;
 
-Q=[];  QDOT=[]; U=[];XD = [];X = [];T = [];logeePos = [];log_t = [];R = [];
+Q=[]; QDOT=[]; U=[];XD = [];X = [];T = [];logeePos = [];log_t = [];R = [];
 
 %% pd controller parameters
 Kp = 40*diag([0.2,1,1,1,0.5,0.5,0.1]);
 Kv = 1.4*diag([3.5,4,2.5,3.5,1.5,1,1]);
 
 %% Connect to the Vrep
-% 1. load api library
-addpath('..');
+% load api library
+addpath('../libs');
 vrep=remApi('remoteApi'); % using the prototype file (remoteApiProto.m)
-% 2. close all the potential link
+% close all the potential link
 vrep.simxFinish(-1);   
-% 3. wait for connecting vrep, detect every 0.2s
+% wait for connecting vrep, detect every 0.2s
 while true
     clientID=vrep.simxStart('127.0.0.1',19999,true,true,5000,5);
     if clientID>-1 
@@ -35,10 +35,10 @@ while true
     end
 end
 disp('Connection success!')
-% 4. set the simulation time step
+% set the simulation time step
 tstep = 0.005;  % 5ms per simulation step
 vrep.simxSetFloatingParameter(clientID,vrep.sim_floatparam_simulation_time_step,tstep,vrep.simx_opmode_oneshot);
-% 5. open the synchronous mode to control the objects in vrep
+% open the synchronous mode to control the objects in vrep
 vrep.simxSynchronous(clientID,true);
 
 %% Simulation Initialization
@@ -133,7 +133,7 @@ while (vrep.simxGetConnectionId(clientID) ~= -1)  % vrep connection is still act
     % 2. display the acquisition data, or store them if plotting is needed.
     if displayOn==true
         disp('joints config q :');       disp(q'.*180/pi);
-        disp('joints config dq :');      disp(qdot'.*180/pi);
+        disp('joints config qdot :');      disp(qdot'.*180/pi);
     end
 
    % 3. calculate tau
