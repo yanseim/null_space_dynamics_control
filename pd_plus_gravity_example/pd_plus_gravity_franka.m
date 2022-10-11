@@ -5,18 +5,21 @@ close all
 clc
 
 %% Parameters
-lbr = importrobot('iiwa14.urdf');
+lbr = importrobot('frankaEmikaPanda.urdf');
+% load frankaEmikaPanda.mat lbr
 lbr.DataFormat = 'column';
-lbr.Gravity = [0 0 -9.81];
+lbr.Gravity = [0 0 -9.81]';
 forceLimit = 5000;
 displayOn=false;
 jointNum = 7;
 
+% show(lbr,'visuals','on','collision','off');
+
 Q=[]; QDOT=[]; U=[];XD = [];X = [];T = [];logeePos = [];log_t = [];R = [];
 
 %% pd controller parameters
-Kp = 40*diag([0.2,1,1,1,0.5,0.5,0.1]);
-Kv = 1.4*diag([3.5,4,2.5,3.5,1.5,1,1]);
+Kp = 0.001*diag([1,1,1,1,1,1,1]);
+Kv = 2*sqrt(Kp);
 
 %% Connect to the Vrep
 % load api library
@@ -36,7 +39,7 @@ while true
 end
 disp('Connection success!')
 % set the simulation time step
-tstep = 0.005;  % 5ms per simulation step
+tstep = 0.05;  % 50ms per simulation step
 vrep.simxSetFloatingParameter(clientID,vrep.sim_floatparam_simulation_time_step,tstep,vrep.simx_opmode_oneshot);
 % open the synchronous mode to control the objects in vrep
 vrep.simxSynchronous(clientID,true);
@@ -44,26 +47,11 @@ vrep.simxSynchronous(clientID,true);
 %% Simulation Initialization
 vrep.simxStartSimulation(clientID,vrep.simx_opmode_oneshot);
 
-        % Now try to retrieve data in a blocking fashion (i.e. a service call):
-        [res,objs]=vrep.simxGetObjects(clientID,vrep.sim_handle_all,vrep.simx_opmode_blocking);
-        if (res==vrep.simx_return_ok)
-            fprintf('Number of objects in the scene: %d\n',length(objs));
-        else
-            fprintf('Remote API function call returned with error code: %d\n',res);
-        end
-
-        joint_index = [];
-        [res,objectHandle]=vrep.simxGetObjects(clientID,vrep.sim_joint_revolute_subtype,vrep.simx_opmode_blocking);
-        if (res==vrep.simx_return_ok)
-            fprintf('yxj: %d\n',length(objectHandle));
-        end
-        
 % get the joint handles
-jointName = '/iiwa_joint_';
+jointName = 'panda_joint';
 jointHandle=zeros(jointNum,1); % column vector
 for i=1:jointNum 
-    [res,returnHandle]=vrep.simxGetObjects(clientID,[jointName,int2str(i)],vrep.simx_opmode_blocking);
-    disp([jointName,int2str(i)]);
+    [res,returnHandle]=vrep.simxGetObjectHandle(clientID,[jointName,int2str(i)],vrep.simx_opmode_blocking);
     if res==0
         jointHandle(i)=returnHandle;
     else
@@ -72,7 +60,7 @@ for i=1:jointNum
 end
 
 % get the ee handle
-[res,eeHandle] = vrep.simxGetObjectHandle(clientID,'iiwa_link_ee_kuka_visual',vrep.simx_opmode_blocking);
+[res,eeHandle] = vrep.simxGetObjectHandle(clientID,'panda_hand_visual',vrep.simx_opmode_blocking);
 if res==0
     jointHandle(i)=returnHandle;
 else
@@ -110,12 +98,13 @@ vrep.simxSynchronousTrigger(clientID);         % every time we call this functio
 %% Simulation Start
 disp('being in loop!');
 t = vrep.simxGetLastCmdTime(clientID)/1000;
-tInit = t;
+tInit = t
 while (vrep.simxGetConnectionId(clientID) ~= -1)  % vrep connection is still active
     
     % 0. time update
     currCmdTime=vrep.simxGetLastCmdTime(clientID);
     dt=(currCmdTime-lastCmdTime)/1000;              % simulation step, unit: s 
+    %  disp(dt)
     
     % 1. read the joints' configuration (position and velocity)
     for i=1:jointNum
@@ -125,12 +114,14 @@ while (vrep.simxGetConnectionId(clientID) ~= -1)  % vrep connection is still act
         jointVeloc(i)=jvel;
     end
 
+%     disp(jointConfig)
+    
     % set desired q(only once)
     if ~exist('dq','var')      
         dq = jointConfig;
-        dq(2) = dq(2)+0.2;
-        dq(3) = dq(3)+0.2;
-        dq(4) = dq(4)+0.2;
+%         dq(2) = dq(2)+0.2;
+%         dq(3) = dq(3)+0.2;
+%         dq(4) = dq(4)+0.2;
     end
     
     if ~exist('jointConfigLast','var')
@@ -145,34 +136,32 @@ while (vrep.simxGetConnectionId(clientID) ~= -1)  % vrep connection is still act
     qdot=jointVeloc;    
     qdotdot = (qdot-jointVelocLast)./dt;% column vector
 
-    % 2. display the acquisition data, or store them if plotting is needed.
-    if displayOn==true
-        disp('joints config q :');       disp(q'.*180/pi);
-        disp('joints config qdot :');      disp(qdot'.*180/pi);
-    end
-
    % 3. calculate tau
     tau_g = gravityTorque(lbr,q);
     
-    tau = -Kp*(q-dq)-Kv*qdot+tau_g;    
-    tau(7)=0;% the tau(7) is set to 0. since its mass is too small for torque control. otherwise it will induce instability
+%     disp(q)
+    disp(tau_g)
+    
+%     tau = -Kp*(q-dq)-Kv*qdot+tau_g;    
+    tau = -Kp*(q-dq)+tau_g;   
+%     tau(7)=0;% the tau(7) is set to 0. since its mass is too small for torque control. otherwise it will induce instability
     
     % 4. set the torque in vrep way
-    for i=1:jointNum
-        if tau(i)<-forceLimit
-            setForce=-forceLimit;
-        elseif tau(i)>forceLimit
-            setForce=+forceLimit;
-        else
-            setForce=tau(i); % set a trememdous large velocity for the screwy operation of the vrep torque control implementaion
+        for i=1:jointNum
+                if tau(i)<-forceLimit
+                    setForce=-forceLimit;
+                elseif tau(i)>forceLimit
+                    setForce=+forceLimit;
+                else
+                    setForce=tau(i); % set a trememdous large velocity for the screwy operation of the vrep torque control implementaion
+                end
+                vrep.simxSetJointTargetVelocity(clientID, jointHandle(i), sign(setForce)*1e10, vrep.simx_opmode_oneshot);
+                tau(i)=setForce;
+                if setForce<0
+                    setForce = -setForce;
+                end
+                vrep.simxSetJointForce(clientID, jointHandle(i),setForce , vrep.simx_opmode_oneshot);           
         end
-        vrep.simxSetJointTargetVelocity(clientID, jointHandle(i), sign(setForce)*1e10, vrep.simx_opmode_oneshot);% decide the direction of force
-        tau(i)=setForce;
-        if setForce<0
-            setForce = -setForce;
-        end
-        vrep.simxSetJointForce(clientID, jointHandle(i),setForce , vrep.simx_opmode_oneshot);           
-    end
 
     % data recording for plotting
     U = [U tau];
@@ -208,9 +197,6 @@ for j=1:jointNum
     end
     if j==1||j==3||j==5||j==7
         ylabel('angle [deg]');
-    end
-    if j==7
-        ylim([-1,1]);
     end
     grid;
 end

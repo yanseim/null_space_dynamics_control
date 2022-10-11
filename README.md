@@ -6,15 +6,15 @@ This repository contains the code for simulation of pd+gravity control with KUKA
 
 #### Prerequisites
 
-* MATLAB r2020a
-* Coppeliasim edu v4.2.0 (The `remApi.m`, `remoteApiProto.m` and `remoteApi.dll` in folder `libs` are v4.2.0,  always make sure you use the corresponding remoteApi library)
+* MATLAB (later than r2020a)
+* Coppeliasim edu v4.4.0 (The latest version as of the time of writing this example. October 2020. ）The `remApi.m`, `remoteApiProto.m` and `remoteApi.dll` in folder `libs` are copied from `CoppeliaRobotics\CoppeliaSimEdu\programming\legacyRemoteApi\remoteApiBindings\matlab\matlab` and `CoppeliaRobotics\CoppeliaSimEdu\programming\legacyRemoteApi\remoteApiBindings\lib\lib\Windows`)
 
 
 
 #### Usage
 
-* Run `pdplusgravity.m` in MATLAB first, then `pdplusgravity.ttt` in CoppeliaSim.
-* If you want to stop the simulation, just stop the simulation in CoppeliaSim, after that the MATLAB part will automatically stop.
+* Run `pdplusgravity.m` in MATLAB first, then `pdplusgravity.ttt` in CoppeliaSim. There may be a warning appeared in CoppeliaSim, just ignore it.
+* If you want to stop the simulation, just stop the simulation in CoppeliaSim, after that the MATLAB part will automatically stop, followed by a figure.
 
 
 
