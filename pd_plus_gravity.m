@@ -3,7 +3,7 @@ clear
 close all
 clc
 
-%% Parameters
+%% Robot Parameters
 lbr = importrobot('iiwa14.urdf');
 lbr.DataFormat = 'column';
 lbr.Gravity = [0 0 -9.81];
@@ -13,14 +13,19 @@ jointNum = 7;
 log_q=[]; log_qdot=[]; log_tau=[];log_t = [];log_ee_pos = [];
 
 %% pd controller parameters
-%================= your code here==================%
-Kp = diag([1,1,1,1,1,1,1]);
-Kv = diag([1,1,1,1,1,1,1]);
+% ================= your code here==================%
+% 
+%
+%
+%
+Kp = [];
+Kv = [];
 
 %% Connect to the Vrep
 % load api library
 addpath('./libs');
-vrep=remApi('remoteApi'); % using the prototype file (remoteApiProto.m)
+% using the prototype file (remoteApiProto.m)
+vrep=remApi('remoteApi');
 % close all the potential link
 vrep.simxFinish(-1);   
 % wait for connecting vrep, detect every 0.2s
@@ -91,7 +96,18 @@ for i=1:jointNum
     [~,rowVec]=vrep.simxGetObjectPosition(clientID,jointHandles(i),-1,vrep.simx_opmode_streaming);
     jointPos(:,i) = rowVec.';
 end
-    
+
+% set desired q; 
+desired_q = [10;40;10;-50;10;100;0]*pi/180;  
+
+% initialize last
+if ~exist('q_last','var') 
+    q_last = jointConfig; 
+end
+if ~exist('qdot_last','var') 
+    qdot_last = jointVeloc; 
+end
+
 % get simulation time
 currCmdTime=vrep.simxGetLastCmdTime(clientID);
 lastCmdTime=currCmdTime;
@@ -114,30 +130,17 @@ while (vrep.simxGetConnectionId(clientID) ~= -1)  % vrep connection is still act
         jointConfig(i)=jang;
         jointVeloc(i)=jvel;
     end
-
-    % 2. set desired q(only once); 
-    %================= your code here==================%
-    if ~exist('dq','var')      
-        dq = jointConfig;
-        dq(2) = dq(2)+0.2;
-        dq(3) = dq(3)+0.2;
-        dq(4) = dq(4)+0.2;
-    end
-    
-    if ~exist('jointConfigLast','var')
-        jointConfigLast = jointConfig;
-    end
-    
-    if ~exist('jointVelocLast','var')
-        jointVelocLast = jointVeloc;
-    end
     
     q=jointConfig;
     qdot=jointVeloc;    
-    qdotdot = (qdot-jointVelocLast)./dt;% column vector
+    qdotdot = (qdot-qdot_last)./dt;% column vector
 
     % 3. calculate tau
-    %================= your code here==================%
+    % ================= your code here==================%
+    %
+    %
+    %
+    %
     tau_g = gravityTorque(lbr,q);
     tau = tau_g;  
 
@@ -167,8 +170,8 @@ while (vrep.simxGetConnectionId(clientID) ~= -1)  % vrep connection is still act
     % 4. update vrep(the server side) matlab is client
 
     lastCmdTime=currCmdTime;
-    jointConfigLast=q;    
-    jointVelocLast = qdot;
+    q_last=q;    
+    qdot_last = qdot;
 
     vrep.simxSynchronousTrigger(clientID);
     vrep.simxGetPingTime(clientID);
@@ -186,15 +189,9 @@ figure(1)
 for j=1:jointNum
     subplot(4,2,j);
     plot(log_t,log_q(j,:).*180/pi,'b'); hold on;
-    scatter(log_t(end),dq(j).*180/pi);
+    scatter(log_t(end),desired_q(j).*180/pi);
     titletext = sprintf('joint %i angle',j);
     subtitle(titletext);
-    if j == 6||j==7
-        xlabel('time [s]');
-    end
-    if j==1||j==3||j==5||j==7
-        ylabel('angle [deg]');
-    end
     if j==7
         ylim([-1,1]);
     end
