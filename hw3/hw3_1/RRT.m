@@ -1,6 +1,5 @@
 %***************************************
-%Author: Chaoqun Wang
-%Date: 2019-10-15
+% RRT
 %***************************************
 %% 流程初始化
 clc
@@ -9,6 +8,7 @@ x_I=1; y_I=1;           % 设置初始点
 x_G=700; y_G=700;       % 设置目标点（可尝试修改终点）
 Thr=50;                 % 设置目标点阈值
 Delta= 30;              % 设置扩展步长
+prob = 0.9;
 %% 建树初始化
 T.v(1).x = x_I;         % T是我们要做的树，v是节点，这里先把起始点加入到T里面来
 T.v(1).y = y_I; 
@@ -33,32 +33,75 @@ for iter = 1:3000
     x_rand=[];
     %Step 1: 在地图中随机采样一个点x_rand
     %提示：用（x_rand(1),x_rand(2)）表示环境中采样点的坐标
+    % ---------------------------------------------------
+    if (rand() > prob)
+        x_rand(1) = randi([1, xL], 1, 1);
+        x_rand(2) = randi([1, yL], 1, 1);
+    else
+        x_rand = [x_G, y_G];
+    end
+    % ---------------------------------------------------
     
-    x_near=[];
+    x_near = [];
     %Step 2: 遍历树，从树中找到最近邻近点x_near 
     %提示：x_near已经在树T里
+    % ---------------------------------------------------
+    min_dist = 1e8;
+    x_near_idx = 0;
+    for i = 1:length(T.v)
+        dist = norm([T.v(i).x, T.v(i).y] - x_rand);
+        if (dist < min_dist)
+            min_dist = dist;
+            x_near = [T.v(i).x, T.v(i).y];
+            x_near_idx = i;
+        end
+    end
+    % ---------------------------------------------------
     
-    x_new=[];
+    x_new = [];
     %Step 3: 扩展得到x_new节点
     %提示：注意使用扩展步长Delta
+    % ---------------------------------------------------
+    x_new = round( x_near + Delta * (x_rand - x_near)/norm(x_rand - x_near) );
+    % ---------------------------------------------------
     
     %检查节点是否是collision-free
-    %if ~collisionChecking(x_near,x_new,Imp) 
-    %    continue;
-    %end
+    if ~collisionChecking(x_near,x_new,Imp) 
+       continue;
+    end
+    
     count=count+1;
     
     %Step 4: 将x_new插入树T 
     %提示：新节点x_new的父节点是x_near
+    % ---------------------------------------------------
+    v_length = length(T.v);
+    T.v(v_length + 1).x = x_new(1);
+    T.v(v_length + 1).y = x_new(2);
+    T.v(v_length + 1).xPrev = x_near(1);     % 起始节点的父节点仍然是其本身
+    T.v(v_length + 1).yPrev = x_near(2);
+    T.v(v_length + 1).dist = norm(x_new - x_near);          % 从父节点到该节点的距离，这里可取欧氏距离
+    T.v(v_length + 1).indPrev = x_near_idx;
+    % ---------------------------------------------------
     
     %Step 5:检查是否到达目标点附近 
     %提示：注意使用目标点阈值Thr，若当前节点和终点的欧式距离小于Thr，则跳出当前for循环
+    % ---------------------------------------------------
+    if (norm(x_new - [x_G, y_G]) < Thr)
+        bFind = true;
+        break;
+    end
+    % ---------------------------------------------------
     
     %Step 6:将x_near和x_new之间的路径画出来
     %提示 1：使用plot绘制，因为要多次在同一张图上绘制线段，所以每次使用plot后需要接上hold on命令
     %提示 2：在判断终点条件弹出for循环前，记得把x_near和x_new之间的路径画出来
+    % ---------------------------------------------------
+    plot([x_near(1), x_new(1)], [x_near(2), x_new(2)], 'b-');
+    hold on
+    % ---------------------------------------------------
    
-    pause(0.05); %暂停一会，使得RRT扩展过程容易观察
+%     pause(0.05); %暂停一会，使得RRT扩展过程容易观察
 end
 %% 路径已经找到，反向查询
 if bFind
