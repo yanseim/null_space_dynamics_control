@@ -1,4 +1,4 @@
-% according file is pd_plus_gravity_2022.ttt
+% according file is pd_plus_gravity.ttt
 clear
 close all
 clc
@@ -13,17 +13,12 @@ jointNum = 7;
 log_q=[]; log_qdot=[]; log_tau=[];log_t = [];log_ee_pos = [];
 
 %% pd controller parameters
-% ================= your code here==================%
-% 
-%
-%
-%
-Kp = [];
-Kv = [];
+Kp = 40*diag([0.2,1,1,1,0.5,0.5,0.1]);
+Kv = 1.4*diag([3.5,4,2.5,3.5,1.5,1,1]);
 
 %% Connect to the Vrep
 % load api library
-addpath('./libs');
+addpath('../libs');
 % using the prototype file (remoteApiProto.m)
 vrep=remApi('remoteApi');
 % close all the potential link
@@ -136,13 +131,9 @@ while (vrep.simxGetConnectionId(clientID) ~= -1)  % vrep connection is still act
     qdotdot = (qdot-qdot_last)./dt;% column vector
 
     % 3. calculate tau
-    % ================= your code here==================%
-    %
-    %
-    %
-    %
     tau_g = gravityTorque(lbr,q);
-    tau = tau_g;  
+    tau = -Kp*(q-desired_q)-Kv*qdot+tau_g; 
+    tau(7) = 0;% the tau(7) is set to 0. since its mass is too small for torque control. otherwise it will induce instability
 
     %%
     % 4. set the torque in vrep way
